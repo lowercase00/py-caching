@@ -23,3 +23,6 @@ htmlcov/
 .xprocess
 .vscode
 .idea
+.mypy_cache/
+.vscode/
+.venv/

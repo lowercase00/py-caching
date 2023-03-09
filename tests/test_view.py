@@ -5,7 +5,7 @@ from flask import make_response
 from flask import request
 from flask.views import View
 
-from flask_caching import CachedResponse
+from pycaching import CachedResponse
 
 
 def test_cached_view(app, cache):
@@ -217,7 +217,7 @@ def test_set_make_cache_key_property(app, cache):
     def cached_view():
         return str(time.time())
 
-    cached_view.make_cache_key = lambda *args, **kwargs: request.args['foo']
+    cached_view.make_cache_key = lambda *args, **kwargs: request.args["foo"]
 
     tc = app.test_client()
 
@@ -399,9 +399,7 @@ def test_generate_cache_key_from_query_string_repeated_paramaters(app, cache):
     first_time = first_response.get_data(as_text=True)
 
     # Make the second query...
-    second_response = tc.get(
-        "/works?mock=true&offset=20&limit=15&user[]=124&user[]=123"
-    )
+    second_response = tc.get("/works?mock=true&offset=20&limit=15&user[]=124&user[]=123")
     second_time = second_response.get_data(as_text=True)
 
     # Now make sure the time for the first and second

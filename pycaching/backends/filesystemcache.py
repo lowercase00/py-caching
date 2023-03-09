@@ -13,7 +13,7 @@ import logging
 
 from cachelib import FileSystemCache as CachelibFileSystemCache
 
-from flask_caching.backends.base import BaseCache
+from pycaching.backends.base import BaseCache
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,6 @@ class FileSystemCache(BaseCache, CachelibFileSystemCache):
         hash_method=hashlib.md5,
         ignore_errors=False,
     ):
-
         BaseCache.__init__(self, default_timeout=default_timeout)
         CachelibFileSystemCache.__init__(
             self,

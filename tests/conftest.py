@@ -4,7 +4,7 @@ import os
 import flask
 import pytest
 
-import flask_caching as fsc
+import pycaching as fsc
 
 try:
     __import__("pytest_xprocess")
@@ -18,9 +18,7 @@ except ImportError:
 
 @pytest.fixture
 def app(request):
-    app = flask.Flask(
-        request.module.__name__, template_folder=os.path.dirname(__file__)
-    )
+    app = flask.Flask(request.module.__name__, template_folder=os.path.dirname(__file__))
     app.testing = True
     app.config["CACHE_TYPE"] = "simple"
     return app

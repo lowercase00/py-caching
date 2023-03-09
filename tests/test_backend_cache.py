@@ -12,8 +12,8 @@ import time
 
 import pytest
 
-from flask_caching import backends
-from flask_caching.backends import RedisSentinelCache
+from pycaching import backends
+from pycaching.backends import RedisSentinelCache
 
 try:
     import redis

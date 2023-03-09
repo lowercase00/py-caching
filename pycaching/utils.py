@@ -3,7 +3,7 @@ import string
 from typing import Callable
 from typing import List
 
-TEMPLATE_FRAGMENT_KEY_TEMPLATE = "_template_fragment_cache_%s%s"
+
 # Used to remove control characters and whitespace from cache keys.
 valid_chars = set(string.ascii_letters + string.digits + "_.")
 del_chars = "".join(c for c in map(chr, range(256)) if c not in valid_chars)
@@ -100,12 +100,3 @@ def function_namespace(f, args=None):
     )
 
     return ns, ins
-
-
-def make_template_fragment_key(fragment_name: str, vary_on: List[str] = None) -> str:
-    """Make a cache key for a specific fragment name."""
-    if vary_on:
-        fragment_name = "%s_" % fragment_name
-    else:
-        vary_on = []
-    return TEMPLATE_FRAGMENT_KEY_TEMPLATE % (fragment_name, "_".join(vary_on))

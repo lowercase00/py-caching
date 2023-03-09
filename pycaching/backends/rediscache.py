@@ -12,7 +12,7 @@ import pickle
 
 from cachelib import RedisCache as CachelibRedisCache
 
-from flask_caching.backends.base import BaseCache
+from pycaching.backends.base import BaseCache
 
 
 class RedisCache(BaseCache, CachelibRedisCache):
@@ -90,9 +90,7 @@ class RedisCache(BaseCache, CachelibRedisCache):
         return new_class
 
     def _get_prefix(self):
-        return (
-            self.key_prefix if isinstance(self.key_prefix, str) else self.key_prefix()
-        )
+        return self.key_prefix if isinstance(self.key_prefix, str) else self.key_prefix()
 
     def dump_object(self, value):
         """Dumps an object into a string for redis.  By default it serializes
@@ -161,22 +159,12 @@ class RedisSentinelCache(RedisCache):
 
         sentinels = sentinels or [("127.0.0.1", 26379)]
         sentinel_kwargs = {
-            key[9:]: value
-            for key, value in kwargs.items()
-            if key.startswith("sentinel_")
+            key[9:]: value for key, value in kwargs.items() if key.startswith("sentinel_")
         }
-        kwargs = {
-            key: value
-            for key, value in kwargs.items()
-            if not key.startswith("sentinel_")
-        }
+        kwargs = {key: value for key, value in kwargs.items() if not key.startswith("sentinel_")}
 
         sentinel = redis.sentinel.Sentinel(
-            sentinels=sentinels,
-            password=password,
-            db=db,
-            sentinel_kwargs=sentinel_kwargs,
-            **kwargs
+            sentinels=sentinels, password=password, db=db, sentinel_kwargs=sentinel_kwargs, **kwargs
         )
 
         self._write_client = sentinel.master_for(master)
@@ -221,9 +209,7 @@ class RedisClusterCache(RedisCache):
     ``rediscluster.RedisCluster``.
     """
 
-    def __init__(
-        self, cluster="", password="", default_timeout=300, key_prefix="", **kwargs
-    ):
+    def __init__(self, cluster="", password="", default_timeout=300, key_prefix="", **kwargs):
         super().__init__(key_prefix=key_prefix, default_timeout=default_timeout)
 
         if kwargs.get("decode_responses", None):
@@ -237,9 +223,7 @@ class RedisClusterCache(RedisCache):
 
         try:
             nodes = [(node.split(":")) for node in cluster.split(",")]
-            startup_nodes = [
-                ClusterNode(node[0].strip(), node[1].strip()) for node in nodes
-            ]
+            startup_nodes = [ClusterNode(node[0].strip(), node[1].strip()) for node in nodes]
         except IndexError as e:
             raise ValueError(
                 "Please give the correct cluster argument "

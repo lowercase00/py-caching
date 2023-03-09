@@ -12,7 +12,7 @@ import logging
 
 from cachelib import SimpleCache as CachelibSimpleCache
 
-from flask_caching.backends.base import BaseCache
+from pycaching.backends.base import BaseCache
 
 
 logger = logging.getLogger(__name__)
@@ -38,9 +38,7 @@ class SimpleCache(BaseCache, CachelibSimpleCache):
 
     def __init__(self, threshold=500, default_timeout=300, ignore_errors=False):
         BaseCache.__init__(self, default_timeout=default_timeout)
-        CachelibSimpleCache.__init__(
-            self, threshold=threshold, default_timeout=default_timeout
-        )
+        CachelibSimpleCache.__init__(self, threshold=threshold, default_timeout=default_timeout)
 
         self.ignore_errors = ignore_errors
 

@@ -1,8 +1,8 @@
 import pytest
 from flask import Flask
 
-from flask_caching import Cache
-from flask_caching.backends.simplecache import SimpleCache
+from pycaching import Cache
+from pycaching.backends.simplecache import SimpleCache
 
 try:
     import redis  # noqa
@@ -34,7 +34,7 @@ def test_dict_config(app):
 def test_dict_config_initapp(app):
     cache = Cache()
     cache.init_app(app, config={"CACHE_TYPE": "simple"})
-    from flask_caching.backends.simplecache import SimpleCache
+    from pycaching.backends.simplecache import SimpleCache
 
     assert isinstance(app.extensions["cache"][cache], SimpleCache)
 
@@ -42,7 +42,7 @@ def test_dict_config_initapp(app):
 def test_dict_config_both(app):
     cache = Cache(config={"CACHE_TYPE": "null"})
     cache.init_app(app, config={"CACHE_TYPE": "simple"})
-    from flask_caching.backends.simplecache import SimpleCache
+    from pycaching.backends.simplecache import SimpleCache
 
     assert isinstance(app.extensions["cache"][cache], SimpleCache)
 
@@ -81,12 +81,10 @@ def test_app_redis_cache_backend_url_default_db(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    from flask_caching.backends.rediscache import RedisCache
+    from pycaching.backends.rediscache import RedisCache
 
     assert isinstance(app.extensions["cache"][cache], RedisCache)
-    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
-        "foo"
-    )
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection("foo")
     assert rconn.db == 0
 
 
@@ -98,9 +96,7 @@ def test_app_redis_cache_backend_url_custom_db(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
-        "foo"
-    )
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection("foo")
     assert rconn.db == 2
 
 
@@ -113,9 +109,7 @@ def test_app_redis_cache_backend_url_explicit_db_arg(app, redis_server):
     }
     cache = Cache()
     cache.init_app(app, config=config)
-    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection(
-        "foo"
-    )
+    rconn = app.extensions["cache"][cache]._write_client.connection_pool.get_connection("foo")
     assert rconn.db == 1
 
 

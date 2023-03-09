@@ -3,8 +3,8 @@ import time
 
 import pytest
 
-from flask_caching import Cache
-from flask_caching import function_namespace
+from pycaching import Cache
+from pycaching import function_namespace
 
 
 def test_memoize(app, cache):
@@ -577,9 +577,7 @@ def test_memoize_multiple_arg_kwarg_calls(app, cache):
                 c = [1, 1]
             if d is None:
                 d = [1, 1]
-            return (
-                sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
-            )  # noqa
+            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
 
         result_a = big_foo([5, 3, 2], [1], c=[3, 3], d=[3, 3])
 
@@ -597,9 +595,7 @@ def test_memoize_multiple_arg_kwarg_delete(app, cache):
                 c = [1, 1]
             if d is None:
                 d = [1, 1]
-            return (
-                sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)
-            )  # noqa
+            return sum(a) + sum(b) + sum(c) + sum(d) + random.randrange(0, 100000)  # noqa
 
         result_a = big_foo([5, 3, 2], [1], c=[3, 3], d=[3, 3])
         cache.delete_memoized(big_foo, [5, 3, 2], [1], [3, 3], [3, 3])
@@ -639,13 +635,9 @@ def test_memoize_kwargs_to_args(app, cache):
         assert args == expected
         args, kwargs = cache._memoize_kwargs_to_args(big_foo, 2, "foo", "bar", a=1)
         assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, a=1, b=2, c="foo", d="bar"
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, a=1, b=2, c="foo", d="bar")
         assert args == expected
-        args, kwargs = cache._memoize_kwargs_to_args(
-            big_foo, d="bar", b=2, a=1, c="foo"
-        )
+        args, kwargs = cache._memoize_kwargs_to_args(big_foo, d="bar", b=2, a=1, c="foo")
         assert args == expected
         args, kwargs = cache._memoize_kwargs_to_args(big_foo, 1, 2, d="bar", c="foo")
         assert args == expected
@@ -677,12 +669,7 @@ def test_memoize_when_using_variable_mix_args_unpacking(app, cache):
 
         @cache.memoize()
         def big_foo(a, b, *args, **kwargs):
-            return (
-                sum([a, b])
-                + sum(args)
-                + sum(kwargs.values())
-                + random.randrange(0, 100000)
-            )
+            return sum([a, b]) + sum(args) + sum(kwargs.values()) + random.randrange(0, 100000)
 
         result_a = big_foo(1, 2, 3, 4, x=2, y=5)
         result_b = big_foo(4, 7, 7, 2, x=1, y=4)

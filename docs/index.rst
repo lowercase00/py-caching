@@ -30,7 +30,7 @@ Set Up
 Cache is managed through a ``Cache`` instance::
 
     from flask import Flask
-    from flask_caching import Cache
+    from pycaching import Cache
 
     config = {
         "DEBUG": True,          # some Flask specific configs
@@ -250,7 +250,7 @@ Set timeout to ``del`` to delete cached value::
 If keys are provided, you may easily generate the template fragment key and
 delete it from outside of the template context::
 
-    from flask_caching import make_template_fragment_key
+    from pycaching import make_template_fragment_key
     key = make_template_fragment_key("key1", vary_on=["key2", "key3"])
     cache.delete(key)
 
@@ -275,7 +275,7 @@ Here's an example script to empty your application's cache:
 
 .. code-block:: python
 
-    from flask_caching import Cache
+    from pycaching import Cache
 
     from yourapp import app, your_cache_config
 
@@ -565,7 +565,7 @@ Relevant configuration values
    to memcached backends. To add additional configuration to these caches,
    directly set the configuration options on the object after instantiation::
 
-       from flask_caching import Cache
+       from pycaching import Cache
        cache = Cache()
 
        # Can't configure the client yet...

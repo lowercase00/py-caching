@@ -8,16 +8,15 @@
     :copyright: (c) 2010 by Thadeus Burgess.
     :license: BSD, see LICENSE for more details.
 """
-from flask_caching.backends.filesystemcache import FileSystemCache
-from flask_caching.backends.memcache import MemcachedCache
-from flask_caching.backends.memcache import SASLMemcachedCache
-from flask_caching.backends.memcache import SpreadSASLMemcachedCache
-from flask_caching.backends.nullcache import NullCache
-from flask_caching.backends.rediscache import RedisCache
-from flask_caching.backends.rediscache import RedisClusterCache
-from flask_caching.backends.rediscache import RedisSentinelCache
-from flask_caching.backends.simplecache import SimpleCache
-from flask_caching.backends.uwsgicache import UWSGICache
+from pycaching.backends.filesystemcache import FileSystemCache
+from pycaching.backends.memcache import MemcachedCache
+from pycaching.backends.memcache import SASLMemcachedCache
+from pycaching.backends.memcache import SpreadSASLMemcachedCache
+from pycaching.backends.nullcache import NullCache
+from pycaching.backends.rediscache import RedisCache
+from pycaching.backends.rediscache import RedisClusterCache
+from pycaching.backends.rediscache import RedisSentinelCache
+from pycaching.backends.simplecache import SimpleCache
 
 
 __all__ = (
@@ -57,10 +56,6 @@ def redissentinel(app, config, args, kwargs):
 
 def rediscluster(app, config, args, kwargs):
     return RedisClusterCache.factory(app, config, args, kwargs)
-
-
-def uwsgi(app, config, args, kwargs):
-    return UWSGICache.factory(app, config, args, kwargs)
 
 
 def memcached(app, config, args, kwargs):

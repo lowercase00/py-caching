@@ -14,6 +14,8 @@ import inspect
 import logging
 import uuid
 import warnings
+import importlib
+
 from collections import OrderedDict
 from typing import Any
 from typing import Callable
@@ -21,63 +23,32 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-from flask import current_app
 from flask import Flask
 from flask import request
-from flask import Response
 from flask import url_for
 from markupsafe import Markup
-from werkzeug.utils import import_string
 
-from flask_caching.backends.base import BaseCache
-from flask_caching.backends.simplecache import SimpleCache
-from flask_caching.utils import function_namespace
-from flask_caching.utils import get_arg_default
-from flask_caching.utils import get_arg_names
-from flask_caching.utils import get_id
-from flask_caching.utils import make_template_fragment_key  # noqa: F401
-from flask_caching.utils import wants_args
+from pycaching.backends.base import BaseCache
+from pycaching.backends.simplecache import SimpleCache
+from pycaching.response import CachedResponse
+from pycaching.utils import function_namespace
+from pycaching.utils import get_arg_default
+from pycaching.utils import get_arg_names
+from pycaching.utils import get_id
+from pycaching.utils import wants_args
+from pycaching.const import SUPPORTED_HASH_FUNCTIONS
 
-__version__ = "2.0.2"
 
 logger = logging.getLogger(__name__)
-
-SUPPORTED_HASH_FUNCTIONS = [
-    hashlib.sha1,
-    hashlib.sha224,
-    hashlib.sha256,
-    hashlib.sha384,
-    hashlib.sha512,
-    hashlib.md5,
-]
-
-
-class CachedResponse(Response):
-    """
-    views wraped by @cached can return this (which inherits from flask.Response)
-    to override the cache TTL dynamically
-    """
-
-    timeout = None
-
-    def __init__(self, response, timeout):
-        self.__dict__ = response.__dict__
-        self.timeout = timeout
 
 
 class Cache:
     """This class is used to control the cache objects."""
 
-    def __init__(
-        self,
-        app: Optional[Flask] = None,
-        with_jinja2_ext: bool = True,
-        config=None,
-    ) -> None:
+    def __init__(self, app: Optional[Flask] = None, config=None) -> None:
         if not (config is None or isinstance(config, dict)):
             raise ValueError("`config` must be an instance of dict or None")
 
-        self.with_jinja2_ext = with_jinja2_ext
         self.config = config
 
         self.source_check = None
@@ -117,8 +88,7 @@ class Cache:
 
         if config["CACHE_TYPE"] == "null" and not config["CACHE_NO_NULL_WARNING"]:
             warnings.warn(
-                "Flask-Caching: CACHE_TYPE is set to null, "
-                "caching is effectively disabled."
+                "Flask-Caching: CACHE_TYPE is set to null, " "caching is effectively disabled."
             )
 
         if (
@@ -131,13 +101,6 @@ class Cache:
             )
 
         self.source_check = config["CACHE_SOURCE_CHECK"]
-
-        if self.with_jinja2_ext:
-            from .jinja2ext import CacheExtension, JINJA_CACHE_ATTR_NAME
-
-            setattr(app.jinja_env, JINJA_CACHE_ATTR_NAME, self)
-            app.jinja_env.add_extension(CacheExtension)
-
         self._set_cache(app, config)
 
     def _set_cache(self, app: Flask, config) -> None:
@@ -148,7 +111,7 @@ class Cache:
         else:
             plain_name_used = False
 
-        cache_factory = import_string(import_me)
+        cache_factory = importlib.import_module(import_me)
         cache_args = config["CACHE_ARGS"][:]
         cache_options = {"default_timeout": config["CACHE_DEFAULT_TIMEOUT"]}
 
@@ -169,9 +132,7 @@ class Cache:
             app.extensions = {}
 
         app.extensions.setdefault("cache", {})
-        app.extensions["cache"][self] = cache_factory(
-            app, config, cache_args, cache_options
-        )
+        app.extensions["cache"][self] = cache_factory(app, config, cache_args, cache_options)
         self.app = app
 
     def _call_fn(self, fn, *args, **kwargs):
@@ -182,7 +143,7 @@ class Cache:
 
     @property
     def cache(self) -> SimpleCache:
-        app = current_app or self.app
+        app = self.app
         return app.extensions["cache"][self]
 
     def get(self, *args, **kwargs) -> Optional[Union[str, Markup]]:
@@ -363,7 +324,9 @@ class Cache:
                     if make_cache_key is not None and callable(make_cache_key):
                         cache_key = make_cache_key(*args, **kwargs)
                     else:
-                        cache_key = decorated_function.make_cache_key(*args, use_request=True, **kwargs)
+                        cache_key = decorated_function.make_cache_key(
+                            *args, use_request=True, **kwargs
+                        )
 
                     if (
                         callable(forced_update)
@@ -430,7 +393,7 @@ class Cache:
                 for arg_name, arg in zip(argspec_args, args):
                     kwargs[arg_name] = arg
 
-                use_request = kwargs.pop('use_request', False)
+                use_request = kwargs.pop("use_request", False)
                 return _make_cache_key(args, kwargs, use_request=use_request)
 
             def _make_cache_key_query_string():
@@ -574,9 +537,7 @@ class Cache:
             dirty = True
 
         if dirty:
-            self.cache.set_many(
-                dict(zip(fetch_keys, version_data_list)), timeout=timeout
-            )
+            self.cache.set_many(dict(zip(fetch_keys, version_data_list)), timeout=timeout)
 
         return fname, "".join(version_data_list)
 
@@ -696,14 +657,10 @@ class Cache:
         new_args.extend(args[len(arg_names) :])
         return (
             tuple(new_args),
-            OrderedDict(
-                sorted((k, v) for k, v in kwargs.items() if k in kw_keys_remaining)
-            ),
+            OrderedDict(sorted((k, v) for k, v in kwargs.items() if k in kw_keys_remaining)),
         )
 
-    def _bypass_cache(
-        self, unless: Optional[Callable], f: Callable, *args, **kwargs
-    ) -> bool:
+    def _bypass_cache(self, unless: Optional[Callable], f: Callable, *args, **kwargs) -> bool:
         """Determines whether or not to bypass the cache by calling unless().
         Supports both unless() that takes in arguments and unless()
         that doesn't.

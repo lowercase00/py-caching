@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from flask_caching import Cache
+from pycaching import Cache
 
 try:
     import redis  # noqa
